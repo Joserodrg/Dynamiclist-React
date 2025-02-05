@@ -5,11 +5,15 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
 
-  useEffect(() => {
+ const fetchItems = () => {
     fetch("http://localhost:5000/items")
       .then((response) => response.json())
       .then((data) => setTasks(data))
       .catch((error) => console.error("Error obteniendo tareas:", error));
+  }
+
+  useEffect(() => {
+    fetchItems();
   }, []);
 
   const handleAddTask = () => {
@@ -29,6 +33,22 @@ function App() {
       .catch((error) => console.error("Error agregando tarea:", error));
   };
 
+  const removeData = (id) => {
+    fetch(`http://localhost:5000/items/${id}`, {
+      method: "DELETE",
+    })
+      .then((response) => {
+        return response.json();
+      })
+
+      .then(() => {
+        fetchItems();
+      })
+      .catch((err) => {
+        console.error("Delete Fetch error", err);
+      });
+  };
+
   return (
     <>
       <h1>Dynamic List</h1>
@@ -43,11 +63,22 @@ function App() {
       </div>
 
       <h4>Pendientes:</h4>
-      <ul>
-        {tasks.map((task) => (
-          <li key={task.id}>{task.name}</li>
-        ))}
-      </ul>
+
+      <table>
+        <tbody>
+          {tasks.map(({ id, name }) => (
+            <tr key={id}>
+              <td>{id}</td>
+              <td>{name}</td>
+              <td className="PendingTasks">
+                <button className="button" onClick={() => removeData(id)}>
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </>
   );
 }
